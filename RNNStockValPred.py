@@ -114,7 +114,7 @@ af2 = st.sidebar.selectbox("Fonction d'activation L2", ["tanh", "relu", None])
 #----------------------------- Corps du texte
 st.header("** 1 - Données**")
 if st.checkbox('Afficher les données'):
-    @st.cache()
+    #@st.cache()
     class WebScrapStock:
         
         timeout = 60
