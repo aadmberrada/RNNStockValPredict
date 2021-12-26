@@ -390,10 +390,12 @@ if st.sidebar.button('Run the model'):
         t2 = time.time() - t1
         
         st.write("L'opération a pris %.2f" %t2, "secondes.")
-        if rmse < 10:
-            st.success('Le Modèle selectionné est performant!')
+        
+        if rmse < 5:
+            st.success('Au regard de la RMSE, le modèle selectionné est performant!')
         else:
-            st.warning("Le Modèle selectionné n'est pas performant!")
+            st.warning("Au regard de la RMSE, le modèle selectionné n'est pas performant!")
+
         tr = data[:train_len]
         val = data[train_len:]
         val["Pred"] = y_pred
