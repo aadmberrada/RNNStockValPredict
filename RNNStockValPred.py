@@ -161,14 +161,15 @@ if st.checkbox('Afficher les données'):
     stock = re.findall(r'[A-Z]+', url)[0]
     period1 = re.findall(r'\d{5,}', url)[0]
     period2 = re.findall(r'\d{5,}', url)[1]
-    def lien(stock, period1, period2):
+
+    def lien_url(stock, period1, period2):
         lien = "https://finance.yahoo.com/quote/"+stock+"/history?period1="+period1+"&period2="+period2+"&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
         return lien
-    lien = lien(stock, period1, period2)
-
-    st.markdown("Les données sont directement téléchargeables en format CSV à l'adresse [Yahoo Finance](lien)")
-    #st.write([Yahoo Finance](lien))
-    st.write(lien)  
+    lien = lien_url(stock, period1, period2)
+    
+    st.markdown("""Les données sont directement téléchargeables en format CSV à l'adresse [Yahoo Finance](lien)""")
+    st.write(lien)
+    #st.write("Les données sont directement téléchargeables en format CSV à l'adresse : ", [lien](lien))  
     
     col1, col2 = st.columns([4, 1])
     
@@ -388,7 +389,8 @@ if st.sidebar.button('Run the model'):
         
         t2 = time.time() - t1
         
-        st.write("L'opération a pris %.2f" %t2, "secondes.")
+        #st.write("L'opération a pris %.2f" %t2, "secondes.")
+        st.success("L'opération a pris %.2f" %t2, "secondes.")
         tr = data[:train_len]
         val = data[train_len:]
         val["Pred"] = y_pred
