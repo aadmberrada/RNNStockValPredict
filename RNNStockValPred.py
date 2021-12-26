@@ -5,7 +5,6 @@ Created on Sun Nov 14 15:30:16 2021
 
 @author: Abdoul_Aziz_Berrada
 """
-#python3 -m venv .pyav ===> env vi
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -154,9 +153,106 @@ if st.checkbox('Afficher les données'):
             st.write("On va récupérer les données de", c, "depuis", df.iloc[0, 0], "soit sur", df.shape[0], "jours de marché.")
             return df, url
     
-    df, url = WebScrapStock(stock_name  = stk, days_back=jours).get_stock()
     
+    df, url = WebScrapStock(stock_name  = stk, days_back=jours).get_stock()
     dff = df.copy()
+
+    df1, url1 = WebScrapStock(stock_name  = 'AAPL', days_back=jours).get_stock()
+    df2, url2 = WebScrapStock(stock_name  = 'TSLA', days_back=jours).get_stock()
+    df3, url3 = WebScrapStock(stock_name  = 'MSFT', days_back=jours).get_stock()
+    df4, url4 = WebScrapStock(stock_name  = 'AMZN', days_back=jours).get_stock()
+    df5, url5 = WebScrapStock(stock_name  = 'GOOGL', days_back=jours).get_stock()
+    df6, url6 = WebScrapStock(stock_name  = 'FB', days_back=jours).get_stock()
+    df7, url7 = WebScrapStock(stock_name  = 'NVDA', days_back=jours).get_stock()
+
+    df8 = df1.append(df2)
+    df9 = df8.append(df3)
+    df10 = df9.append(df4)
+    df11 = df10.append(df5)
+    df12 = df11.append(df6)
+    df13 = df11.append(df7)
+
+
+    data = df13.copy()
+    data
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    trace1 = go.Scatter(
+    x = df2["Date"],
+    y = df2["Close"],
+    mode = "lines",
+    name = "Cours de fermeture AAPL ",
+    marker = dict(color = 'black'))
+
+    trace2 = go.Scatter(
+    x = df2["Date"],
+    y = df2["Close"],
+    mode = "lines",
+    name = "Cours de fermeture TSLA",
+    marker = dict(color = 'black'))
+
+    trace3 = go.Scatter(
+    x = df3["Date"],
+    y = df3["Close"],
+    mode = "lines",
+    name = "Cours de fermeture MSFT ",
+    marker = dict(color = 'red'))
+
+    trace4 = go.Scatter(
+    x = df4["Date"],
+    y = df4["Close"],
+    mode = "lines",
+    name = "Cours de fermeture AMZN",
+    marker = dict(color = 'green'))
+
+    trace5 = go.Scatter(
+    x = df5["Date"],
+    y = df5["Close"],
+    mode = "lines",
+    name = "Cours de fermeture GOOGL",
+    marker = dict(color = 'yellow'))
+
+
+    trace6 = go.Scatter(
+    x = df6["Date"],
+    y = df6["Close"],
+    mode = "lines",
+    name = "Cours de fermeture FB",
+    marker = dict(color = 'blue'))
+
+
+    trace7 = go.Scatter(
+    x = df7["Date"],
+    y = df7["Close"],
+    mode = "lines",
+    name = "Cours de fermeture NVDA",
+    marker = dict(color = 'pink'))
+
+
+    fig.add_trace(trace1, secondary_y=False)
+    fig.add_trace(trace2, secondary_y=False)
+    fig.add_trace(trace3, secondary_y=False)
+    fig.add_trace(trace4, secondary_y=False)
+    fig.add_trace(trace5, secondary_y=False)
+    fig.add_trace(trace6, secondary_y=False)
+    fig.add_trace(trace7, secondary_y=False)
+
+    fig.update_xaxes(showline=True, linewidth=2, linecolor='black', gridcolor='Red', rangeslider_visible=True)
+    fig.update_yaxes(range = [0, 6], showline=True, linewidth=2, linecolor='black', gridcolor='black');
+    data = [trace1, trace2, trace3, trace4, trace5, trace6, trace7]
+
+    layout = dict(autosize=False,
+                    width=1000,
+                    height=550,
+                    title = "Évolution du cours de l'action depuis " + str(dff.iloc[0, 0]),
+    xaxis= dict(title= 'Date', showgrid=False,showline=True),
+    yaxis= dict(title= "Cours de l'action",ticklen= 5, zeroline= True, showline=True, showgrid=False), plot_bgcolor='#404754')
+    fig = dict(data = data, layout = layout)
+    #fig.update_xaxes()
+    st.plotly_chart(fig)
+
+    
 
     stock = re.findall(r'[A-Z]+', url)[0]
     period1 = re.findall(r'\d{5,}', url)[0]
@@ -390,7 +486,7 @@ if st.sidebar.button('Run the model'):
         t2 = time.time() - t1
         
         st.write("L'opération a pris %.2f" %t2, "secondes.")
-        
+
         if rmse < 5:
             st.success('Au regard de la RMSE, le modèle selectionné est performant!')
         else:
@@ -464,7 +560,7 @@ if st.sidebar.button('Run the model'):
         
         pred = model.predict(x_test)
         pred = scaler.inverse_transform(pred)
-        st.write("Sur la base de ce modèle l'action", c, "coutera demain", pred[0][0], "$ en sachant qu'il coûte actuellement", dff.iloc[-1, 5], "$")
+        st.write("Sur la base de ce modèle l'action", c, "coutera le prochain jour de cotation", pred[0][0], "$ en sachant qu'il est côté actuellement", dff.iloc[-1, 5], "$")
 #----------------------------- 
 
 
