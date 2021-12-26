@@ -29,8 +29,8 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 #import graphviz as graphviz
 #import tensorflow
 #import keras
-#from keras.models import Sequential
-#from keras.layers import Dense, LSTM
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
