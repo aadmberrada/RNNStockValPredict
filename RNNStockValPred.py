@@ -373,7 +373,7 @@ if st.checkbox('Afficher la modélisation '):
         rmse = np.sqrt(np.mean((y_test - y_pred)**2))
         st.write("RMSE %.2f" %rmse)
         
-        return y_pred, model
+        return y_pred, rmse, model
     
 
 st.info("Pour faire tourner le modèle, veuillez cocher les cases **Données, Méthodologie et Modélisations** puis choisir des paramètres dans le menu à gauche !")
@@ -385,12 +385,15 @@ if st.sidebar.button('Run the model'):
         
         t1 = time.time()
         data, X_train, X_test, y_train, y_test, scaler, train_len = preprocessing(scale)
-        y_pred,  model = model()
+        y_pred, rmse,  model = model()
         
         t2 = time.time() - t1
         
-        #st.write("L'opération a pris %.2f" %t2, "secondes.")
-        st.success("L'opération a pris %.2f" %t2, "secondes.")
+        st.write("L'opération a pris %.2f" %t2, "secondes.")
+        if rmse < 10:
+            st.success('Le Modèle selectionné est performant!')
+        else:
+            st.warning("Le Modèle selectionné n'est pas performant!")
         tr = data[:train_len]
         val = data[train_len:]
         val["Pred"] = y_pred
