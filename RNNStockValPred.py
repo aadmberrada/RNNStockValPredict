@@ -183,7 +183,7 @@ if st.checkbox('Afficher les données'):
     y = df2["Close"],
     mode = "lines",
     name = "Cours de fermeture AAPL ",
-    marker = dict(color = 'black'))
+    marker = dict(color = 'grey'))
 
     trace2 = go.Scatter(
     x = df2["Date"],
@@ -238,8 +238,8 @@ if st.checkbox('Afficher les données'):
     fig.add_trace(trace6, secondary_y=False)
     fig.add_trace(trace7, secondary_y=False)
 
-    fig.update_xaxes(showline=True, linewidth=2, linecolor='black', gridcolor='Red', rangeslider_visible=True)
-    fig.update_yaxes(range = [0, 6], showline=True, linewidth=2, linecolor='black', gridcolor='black');
+    fig.update_xaxes(showline=True, linewidth=2, linecolor='black', gridcolor='Red')
+    fig.update_yaxes(showline=True, linewidth=2, linecolor='black', gridcolor='black')
     data = [trace1, trace2, trace3, trace4, trace5, trace6, trace7]
 
     layout = dict(autosize=False,
