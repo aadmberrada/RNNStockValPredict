@@ -29,8 +29,8 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 #import graphviz as graphviz
 #import tensorflow
 #import keras
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
+#from keras.models import Sequential
+#from keras.layers import Dense, LSTM
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -45,11 +45,11 @@ st.title("Stock's Value Prediction using RNNs")
 #st.title("Stock Value Prediction using Neural Networks")
 col1, col2, col3 = st.columns(3)
 
-col1.image('https://github.com/aadmberrada/test/blob/master/img/mosef3.png')
+col1.image('https://raw.githubusercontent.com/aadmberrada/test/master/img/mosef3.png')
 
 col2.image("https://raw.githubusercontent.com/aadmberrada/test/master/img/YahooFinance.jpeg")
 
-col3.image("https://github.com/aadmberrada/test/blob/master/img/py.png")
+col3.image("https://raw.githubusercontent.com/aadmberrada/test/master/img/py.png")
 
 st.markdown("""
             
