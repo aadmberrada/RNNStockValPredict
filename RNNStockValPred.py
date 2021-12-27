@@ -226,10 +226,8 @@ st.header("** 2 - Données**")
 if st.checkbox('Afficher les données'):
     st.info("Pour commencer, veuiller choisir un titre et une période d'étude dans 'Étape - I' dans le menu de gauche ")
 
-    st.write("Vous aveez choisi",  action, "et une période de", jours, "jours soit", df.shape[0], "cotations.")
-
     df, url = WebScrapStock(stock_name  = stk, days_back=jours).get_stock()
-    
+    st.write("Vous aveez choisi",  action, "et une période de", jours, "jours soit", df.shape[0], "cotations.")
     dff = df.copy()
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
