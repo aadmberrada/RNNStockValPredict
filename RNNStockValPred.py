@@ -120,6 +120,7 @@ st.header("** 1 - Statistiques**")
 if st.checkbox("Voir les statistiques"):
 
     st.warning("Si les données n'apparaissent pas et qu'une erreur survient, veuillez décocher la case 'Voir les statistiques' et passer.")
+    @st.cache()
     class WebScrapStock:
         
         timeout = 60
@@ -224,7 +225,7 @@ if st.checkbox('Afficher les données'):
     st.info("Pour commencer, veuiller choisir un titre et une période d'étude dans 'Étape - I' dans le menu de gauche ")
 
     st.write("Vous aveez choisi",  action, "et une période de", jours, "jours.")
-    #@st.cache()
+    @st.cache()
     class WebScrapStock:
         
         timeout = 60
