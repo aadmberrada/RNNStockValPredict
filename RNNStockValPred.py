@@ -711,7 +711,6 @@ if st.sidebar.button('Run the model'):
         tr = tr.reset_index()
 
         fig2 = make_subplots(specs=[[{"secondary_y": True}]])
-        
         trace1 = go.Scatter(
         x = tr["Date"],
         y = tr["Close"],
@@ -736,12 +735,13 @@ if st.sidebar.button('Run the model'):
         fig2.add_trace(trace3, secondary_y=False)
         
         fig2.update_xaxes(showline=True, linewidth=2, linecolor='black', gridcolor='Red', rangeslider_visible=True)
-        fig2.update_yaxes(range = [0, 6], showline=True, linewidth=2, linecolor='black', gridcolor='black');
+        fig2.update_yaxes(showline=True, linewidth=2, linecolor='black', gridcolor='black')
         
         data = [trace1, trace2, trace3]
         data1 = [trace2, trace3]
+
         layout = dict(autosize=False,
-                          width=1000,
+                          width=1200,
                           height=550,
                           title = "Prédiction sur les données de test à partir du modèle",
         xaxis= dict(title= 'Date', showgrid=False,showline=True),
@@ -753,6 +753,7 @@ if st.sidebar.button('Run the model'):
                   title = "Zoom sur la période de test",
         xaxis= dict(title= 'Date', showgrid=False,showline=True),
         yaxis= dict(title= "Cours de l'action",ticklen= 5, zeroline= True, showline=True, showgrid=False), plot_bgcolor='#404754')
+
         fig2 = dict(data = data, layout = layout)
         fig3 = dict(data = data1, layout = layout1)
         st.plotly_chart(fig2)     
