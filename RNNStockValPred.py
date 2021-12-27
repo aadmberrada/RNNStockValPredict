@@ -140,7 +140,7 @@ class WebScrapStock:
         else:
             self.crumb = match.group(1)
             
-    @st.cache()
+    
     def get_stock(self):
         if not hasattr(self, 'crumb') or len(self.session.cookies) == 0:
             self.get_crumb()
