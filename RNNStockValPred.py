@@ -22,14 +22,16 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from bs4 import BeautifulSoup
+import json
+from lxml import html
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 #import graphviz as graphviz
 #import tensorflow
 #import keras
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
+#from keras.models import Sequential
+#from keras.layers import Dense, LSTM
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -40,9 +42,10 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 #--------------------------------- Head
 ## ===> Header
-st.title("Stock's Value Prediction using RNNs")
+#st.title("")
+st.markdown("<h1 style='text-align: center;'> Stock's Value Prediction using RNNs</h1>", unsafe_allow_html=True)
 #st.title("Stock Value Prediction using Neural Networks")
-col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns([0.75, 0.75, 0.75])
 
 col1.image('https://raw.githubusercontent.com/aadmberrada/test/master/img/mosef3.png')
 
@@ -55,13 +58,14 @@ st.markdown("""
 Ce projet a pour but de recueillir par webscrapping des données historiques d'entreprises cotées et puis de faire une analyse predictive in-sample en utilisant les Reccurent Neural Networks RNNs.""")
 
 st.markdown(""" ==> Pre requis :
-*   **Python :** pandas, numpy, pyplot, tensorflow, keras, sklearn, streamlit.
+*   **Python :** pandas, numpy, pyplot, tensorflow, keras, sklearn, streamlit, BeautifulSoup.
 
 *   **Source des données :** https://finance.yahoo.com/quote/yhoo/history/""")
 
+st.info("Pour commencer, veuiller cocher les différentes cases !")
 #------------------------------------ Sidebar
 
-st.sidebar.markdown("**Abdoul Aziz Berrada - Amira Slimene**")
+st.sidebar.subheader("Abdoul Aziz Berrada - Amira Slimene")
 
 st.sidebar.markdown("------------------------------------")
 
@@ -71,11 +75,11 @@ st.sidebar.title("User Input Features")
 #--------------
 ## ===> Dataset
 
-st.sidebar.subheader(" I -  Chargement des données")
+st.sidebar.subheader(" Étape I -  Chargement des données")
 
 action = st.sidebar.selectbox("Selectionnez un actif à étudier", ['Apple Inc - AAPL', 'Tesla Inc - TSLA', 'Microsoft Corporation - MSFT', 
                                                                     'Amazon.com Inc - AMZN', 'Alphabet Inc - GOOGL',
-                                                                    'Meta Platforms Inc - FB', 'NVIDIA Corporation - NVDA'])
+                                                                    'Meta Platforms Inc - FB', 'NVIDIA Corporation - NVDA', 'Netflix - NFLX'])
 stk = action.split(" ")[-1]
 c = re.findall(r'[A-Za-z/./ /]+', action)[0]
 jours = st.sidebar.slider("Selectionnez un nombre de jours d'étude", min_value = 2*360, max_value = 15*360, step = 180)
@@ -83,7 +87,7 @@ jours = st.sidebar.slider("Selectionnez un nombre de jours d'étude", min_value 
 #-------------
 ##  ===> Deep Learning model
 
-st.sidebar.subheader(" II -  4-layer RNN model")
+st.sidebar.subheader(" Étape II -  Modélisation")
 
 scale = st.sidebar.selectbox("Scaler", ["MinMaxScaler", "StandardScaler"])
 
@@ -111,9 +115,11 @@ af2 = st.sidebar.selectbox("Fonction d'activation L2", ["tanh", "relu", None])
 
 
 #----------------------------- Corps du texte
-st.header("** 1 - Données**")
-if st.checkbox('Afficher les données'):
-    #@st.cache()
+st.header("** 1 - Statistiques**")
+#st.subheader("** 1.1 - Statistiques **")
+if st.checkbox("Voir les statistiques"):
+
+    st.warning("Si les données n'apparaissent pas et qu'une erreur survient, veuillez décocher la case 'Voir les statistiques' et passer.")
     class WebScrapStock:
         
         timeout = 60
@@ -121,13 +127,13 @@ if st.checkbox('Afficher les données'):
         crumble_regex = r'CrumbStore":{"crumb":"(.*?)"}'
         stock_link = 'https://query1.finance.yahoo.com/v7/finance/download/{quote}?period1={dfrom}&period2={dto}&interval=1d&events=history&crumb={crumb}'
         headers_={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
-    
-    
+
+
         def __init__(self, stock_name, days_back=7):
             self.stock_name = stock_name
             self.session = requests.Session()
             self.dt = timedelta(days=days_back)
-    
+
         def get_crumb(self):
             response = self.session.get(self.crumb_link.format(self.stock_name), timeout=self.timeout, verify = False, headers=self.headers_)
             response.raise_for_status()
@@ -137,7 +143,7 @@ if st.checkbox('Afficher les données'):
                 raise ValueError("Pas de réponse de Yahoo Finance")
             else:
                 self.crumb = match.group(1)
-    
+
         def get_stock(self):
             if not hasattr(self, 'crumb') or len(self.session.cookies) == 0:
                 self.get_crumb()
@@ -150,109 +156,145 @@ if st.checkbox('Afficher les données'):
             df = pd.read_csv(StringIO(response.text), parse_dates=['Date'])
             df["Stock"] = self.stock_name
             df = df[["Date", "Stock", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
-            st.write("On va récupérer les données de", c, "depuis", df.iloc[0, 0], "soit sur", df.shape[0], "jours de marché.")
+            #st.write("On va récupérer les données de", c, "depuis", df.iloc[0, 0], "soit sur", df.shape[0], "jours de marché.")
             return df, url
     
     
-    df, url = WebScrapStock(stock_name  = stk, days_back=jours).get_stock()
-    dff = df.copy()
-
+    jours = jours
     df1, url1 = WebScrapStock(stock_name  = 'AAPL', days_back=jours).get_stock()
     df2, url2 = WebScrapStock(stock_name  = 'TSLA', days_back=jours).get_stock()
     df3, url3 = WebScrapStock(stock_name  = 'MSFT', days_back=jours).get_stock()
     df4, url4 = WebScrapStock(stock_name  = 'AMZN', days_back=jours).get_stock()
     df5, url5 = WebScrapStock(stock_name  = 'GOOGL', days_back=jours).get_stock()
-    df6, url6 = WebScrapStock(stock_name  = 'FB', days_back=jours).get_stock()
+    df6, url6 = WebScrapStock(stock_name  = 'FB',  days_back=jours).get_stock()
     df7, url7 = WebScrapStock(stock_name  = 'NVDA', days_back=jours).get_stock()
+    df8, url8 = WebScrapStock(stock_name  = 'NFLX', days_back=jours).get_stock()
+    
+    st.markdown("Quelques statistiques sur les cours des différents titres")
+    col10, col11, col12, col13 = st.columns(4)
 
-    df8 = df1.append(df2)
-    df9 = df8.append(df3)
-    df10 = df9.append(df4)
-    df11 = df10.append(df5)
-    df12 = df11.append(df6)
-    df13 = df11.append(df7)
+    col14, col15, col16, col17 = st.columns(4)
+
+    def var(df__):
+        x = df__.shape[0] - 1
+        y = df__.shape[1] - 3
+        x1 = df__.shape[0] - 2
+        y1 = y + 2
+        d = 100*(df__.iloc[x , y ]  / df__.iloc[ x1, y ]  - 1)
+        e = 100*(df__.iloc[x , y1 ] /  df__.iloc[ x1, y1 ] - 1)
+        return d, e, x, y, y1
+    
+    d_1, e_1, x1, y1, y11 = var(df1)
+    d_2, e_2, x2, y2, y12 = var(df2)
+    d_3, e_3, x3, y3, y13 = var(df3)
+    d_4, e_4, x4, y4, y14 = var(df4)
+    d_5, e_5, x5, y5, y15 = var(df5)
+    d_6, e_6, x6, y6, y16 = var(df6)
+    d_7, e_7, x7, y7, y17 = var(df7)
+    d_8, e_8, x8, y8, y18 = var(df8)
+    
+    col10.metric(label= "AAPL" + "'s Price", value=  "{:.2f}".format(df1.iloc[x1 , y1 ]), delta="{:.2f}".format(d_1)+"%")
+    col10.metric(label= "AAPL" + "'s Volume", value=  "{:.0f}".format(df1.iloc[x1 , y11 ]), delta="{:.2f}".format(e_1)+"%")
+
+    col11.metric(label= 'TSLA' + "'s Price", value=  "{:.2f}".format(df2.iloc[x2 , y1 ]), delta="{:.2f}".format(d_2)+"%")
+    col11.metric(label= 'TSLA' + "'s Volume", value=  "{:.0f}".format(df2.iloc[x2 , y12 ]), delta="{:.2f}".format(e_2)+"%")
+
+    col12.metric(label= 'MSFT' + "'s Price", value=  "{:.2f}".format(df3.iloc[x3 , y3 ]), delta="{:.2f}".format(d_3)+"%")
+    col12.metric(label= 'MSFT' + "'s Volume", value=  "{:.0f}".format(df3.iloc[x3 , y13 ]), delta="{:.2f}".format(e_3)+"%")
+
+    col13.metric(label= 'AMZN' + "'s Price", value=  "{:.2f}".format(df4.iloc[x4 , y4 ]), delta="{:.2f}".format(d_4)+"%")
+    col13.metric(label= 'AMZN' + "'s Volume", value=  "{:.0f}".format(df4.iloc[x4 , y14 ]), delta="{:.2f}".format(e_4)+"%")
+
+    col14.metric(label= 'GOOGL' + "'s Price", value=  "{:.2f}".format(df5.iloc[x5 , y5 ]), delta="{:.2f}".format(d_5)+"%")
+    col14.metric(label= 'GOOGL' + "'s Volume", value=  "{:.0f}".format(df5.iloc[x5 , y15 ]), delta="{:.2f}".format(e_5)+"%")
+
+    col15.metric(label= 'FB' + "'s Price", value=  "{:.2f}".format(df6.iloc[x6 , y6 ]), delta="{:.2f}".format(d_6)+"%")
+    col15.metric(label= 'FB' + "'s Volume", value=  "{:.0f}".format(df6.iloc[x6 , y16 ]), delta="{:.2f}".format(e_6)+"%")
+
+    col16.metric(label= 'NVDA' + "'s Price", value=  "{:.2f}".format(df7.iloc[x7 , y7 ]), delta="{:.2f}".format(d_7)+"%")
+    col16.metric(label= 'NVDA' + "'s Volume", value=  "{:.0f}".format(df7.iloc[x7 , y17 ]), delta="{:.2f}".format(e_7)+"%")
+
+    col17.metric(label= 'NFLX' + "'s Price", value=  "{:.2f}".format(df8.iloc[x8 , y8 ]), delta="{:.2f}".format(d_8)+"%")
+    col17.metric(label= 'NFLX' + "'s Volume", value=  "{:.0f}".format(df8.iloc[x8 , y18 ]), delta="{:.2f}".format(e_8)+"%")
 
 
-    data = df13.copy()
-    data
+
+st.header("** 2 - Données**")
+if st.checkbox('Afficher les données'):
+    st.info("Pour commencer, veuiller choisir un titre et une période d'étude dans 'Étape - I' dans le menu de gauche ")
+
+    st.write("Vous aveez choisi",  action, "et une période de", jours, "jours.")
+    #@st.cache()
+    class WebScrapStock:
+        
+        timeout = 60
+        crumb_link = 'https://finance.yahoo.com/quote/{0}/history?p={0}'
+        crumble_regex = r'CrumbStore":{"crumb":"(.*?)"}'
+        stock_link = 'https://query1.finance.yahoo.com/v7/finance/download/{quote}?period1={dfrom}&period2={dto}&interval=1d&events=history&crumb={crumb}'
+        headers_={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
+
+
+        def __init__(self, stock_name, days_back=7):
+            self.stock_name = stock_name
+            self.session = requests.Session()
+            self.dt = timedelta(days=days_back)
+
+        def get_crumb(self):
+            response = self.session.get(self.crumb_link.format(self.stock_name), timeout=self.timeout, verify = False, headers=self.headers_)
+            response.raise_for_status()
+            match = re.search(self.crumble_regex, response.text)
+            
+            if not match:
+                raise ValueError("Pas de réponse de Yahoo Finance")
+            else:
+                self.crumb = match.group(1)
+
+        def get_stock(self):
+            if not hasattr(self, 'crumb') or len(self.session.cookies) == 0:
+                self.get_crumb()
+            now = datetime.utcnow()
+            dateto = int(now.timestamp())
+            datefrom = int((now - self.dt).timestamp())
+            url = self.stock_link.format(quote=self.stock_name, dfrom=datefrom, dto=dateto, crumb=self.crumb)
+            response = self.session.get(url, verify = False, headers=self.headers_)
+            response.raise_for_status()
+            df = pd.read_csv(StringIO(response.text), parse_dates=['Date'])
+            df["Stock"] = self.stock_name
+            df = df[["Date", "Stock", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
+            #st.write("On va récupérer les données de", c, "depuis", df.iloc[0, 0], "soit sur", df.shape[0], "jours de marché.")
+            return df, url
+    df, url = WebScrapStock(stock_name  = stk, days_back=jours).get_stock()
+    
+    dff = df.copy()
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     trace1 = go.Scatter(
-    x = df2["Date"],
-    y = df2["Close"],
+    x = df["Date"],
+    y = df["Close"],
     mode = "lines",
-    name = "Cours de fermeture AAPL ",
-    marker = dict(color = 'grey'))
-
-    trace2 = go.Scatter(
-    x = df2["Date"],
-    y = df2["Close"],
-    mode = "lines",
-    name = "Cours de fermeture TSLA",
-    marker = dict(color = 'black'))
-
-    trace3 = go.Scatter(
-    x = df3["Date"],
-    y = df3["Close"],
-    mode = "lines",
-    name = "Cours de fermeture MSFT ",
-    marker = dict(color = 'red'))
-
-    trace4 = go.Scatter(
-    x = df4["Date"],
-    y = df4["Close"],
-    mode = "lines",
-    name = "Cours de fermeture AMZN",
-    marker = dict(color = 'green'))
-
-    trace5 = go.Scatter(
-    x = df5["Date"],
-    y = df5["Close"],
-    mode = "lines",
-    name = "Cours de fermeture GOOGL",
-    marker = dict(color = 'yellow'))
-
-
-    trace6 = go.Scatter(
-    x = df6["Date"],
-    y = df6["Close"],
-    mode = "lines",
-    name = "Cours de fermeture FB",
-    marker = dict(color = 'blue'))
-
-
-    trace7 = go.Scatter(
-    x = df7["Date"],
-    y = df7["Close"],
-    mode = "lines",
-    name = "Cours de fermeture NVDA",
-    marker = dict(color = 'pink'))
-
-
+    name = "Cours de fermeture " + str(stk),
+    marker = dict(color = '#CB7272'), 
+    fill='tozeroy', fillcolor = '#4F7081')
+  
     fig.add_trace(trace1, secondary_y=False)
-    fig.add_trace(trace2, secondary_y=False)
-    fig.add_trace(trace3, secondary_y=False)
-    fig.add_trace(trace4, secondary_y=False)
-    fig.add_trace(trace5, secondary_y=False)
-    fig.add_trace(trace6, secondary_y=False)
-    fig.add_trace(trace7, secondary_y=False)
+
 
     fig.update_xaxes(showline=True, linewidth=2, linecolor='black', gridcolor='Red')
     fig.update_yaxes(showline=True, linewidth=2, linecolor='black', gridcolor='black')
-    data = [trace1, trace2, trace3, trace4, trace5, trace6, trace7]
+    data = [trace1]
 
     layout = dict(autosize=False,
                     width=1000,
                     height=550,
-                    title = "Évolution du cours de l'action depuis " + str(dff.iloc[0, 0]),
+                    title = "Évolution du cours de l'action "+str(stk)+" depuis " + str(dff.iloc[0, 0])[:10],
     xaxis= dict(title= 'Date', showgrid=False,showline=True),
     yaxis= dict(title= "Cours de l'action",ticklen= 5, zeroline= True, showline=True, showgrid=False), plot_bgcolor='#404754')
     fig = dict(data = data, layout = layout)
     #fig.update_xaxes()
     st.plotly_chart(fig)
+   
 
-    
 
     stock = re.findall(r'[A-Z]+', url)[0]
     period1 = re.findall(r'\d{5,}', url)[0]
@@ -263,8 +305,8 @@ if st.checkbox('Afficher les données'):
         return lien
     lien = lien_url(stock, period1, period2)
     
-    st.markdown("""Les données sont directement téléchargeables en format CSV à l'adresse [Yahoo Finance](lien)""")
-    st.write(lien)
+    #st.markdown("""Les données sont directement téléchargeables en format CSV à l'adresse [Yahoo Finance](lien)""")
+    #st.write(lien)
     #st.write("Les données sont directement téléchargeables en format CSV à l'adresse : ", [lien](lien))  
     
     col1, col2 = st.columns([4, 1])
@@ -278,40 +320,247 @@ if st.checkbox('Afficher les données'):
     #d = (df.iloc[df.shape[0] - 1 , df.shape[5]] - df.iloc[df.shape[0], df.shape[5]])/df.iloc[df.shape[0], df.shape[5]]
         
     
-    col2.metric(label= str(c) + "'s Price", value=  "{:.2f}".format(df.iloc[x , y ]), delta="{:.2f}".format(d)+"%")
-    col2.metric(label= str(c) + "'s Volume", value=  "{:.0f}".format(df.iloc[x , y1 ]), delta="{:.2f}".format(e)+"%")
+    #col2.metric(label= str(c) + "'s Price", value=  "{:.2f}".format(df.iloc[x , y ]), delta="{:.2f}".format(d)+"%")
+    #col2.metric(label= str(c) + "'s Volume", value=  "{:.0f}".format(df.iloc[x , y1 ]), delta="{:.2f}".format(e)+"%")
     
-    col1.dataframe(df.sort_values("Date", ascending=False))
+    #col1.dataframe(
+    st.dataframe(df.sort_values("Date", ascending=False))
     
-    st.write('Statistiques descriptives des actions', c)
-    st.table(df.describe())
-    
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    trace = go.Scatter(
-    x = df["Date"],
-    y = df["Close"],
-    mode = "lines",
-    name = "Cours de fermeture",
-    marker = dict(color = '#CB7272'), 
-    fill='tozeroy', fillcolor = '#4F7081')
+    #st.write('Statistiques descriptives des actions', c)
+    #st.table(df.describe())
 
-    fig.add_trace(trace, secondary_y=False)
-    fig.update_xaxes(showline=True, linewidth=2, linecolor='black', gridcolor='Red', rangeslider_visible=True)
-    fig.update_yaxes(range = [0, 6], showline=True, linewidth=2, linecolor='black', gridcolor='black');
-    data = [trace]
-    layout = dict(autosize=False,
-                      width=1000,
-                      height=550,
-                      title = "Évolution du cours de l'action "+ str(c)+" depuis " + str(df.iloc[0, 0]),
-    xaxis= dict(title= 'Date', showgrid=False,showline=True),
-    yaxis= dict(title= "Cours de l'action",ticklen= 5, zeroline= True, showline=True, showgrid=False), plot_bgcolor='#404754')
-    fig = dict(data = data, layout = layout)
-    #fig.update_xaxes()
-    st.plotly_chart(fig) 
+    def statistiques(action, print_list = False):
+        
+        """
+        Cette fonction permet de générer des statistiques d'une entreprise
+        
+        Parameters
+        ----------
+        action : str
+            Nom du titre
+        print_list : bool, , default=False
+            Affiche ou non la liste des statistiques de base
+        returns
+        -----
+            Des statistiques au format json
+        """
+        ## Stats
+        url_stats = "https://finance.yahoo.com/quote/{}/key-statistics?p={}"
+        #st.write("--Statistiques de l'entreprise " + action + "--")
+        stock = action
+        headers_={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
+        response = requests.get(url_stats.format(stock, stock), headers = headers_)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        pattern = re.compile(r'\s--\sData\s--\s')
+        script_data = soup.find('script', text=pattern).contents[0]
+        start = script_data.find("context") - 2
+        json_data = json.loads(script_data[start:-12])
+        #json_data['context'].keys()
+        #json_data['context']['dispatcher']['stores']['QuoteSummaryStore'].keys()
+        #json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["defaultKeyStatistics"].keys()
+        mylist = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["defaultKeyStatistics"]
+
+        if print_list == True:
+            st.write(mylist)
+            
+        d = pd.DataFrame(json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["defaultKeyStatistics"])
+        d = d[d.columns[d.isna().sum()<3]].replace(to_replace = np.NaN, value = "-")
+
+        j = d.to_json(orient="columns")
+        parsed = json.loads(j)
+        j_1 = json.dumps(parsed, indent=2)
+
+        #j_1 = parsed
+        return j_1
+
+    j_1 = statistiques(str(stk), print_list = False)
+
+    st.markdown("<h4 style='text-align: center;'>STATISTIQUES DE BASE</h4>", unsafe_allow_html=True)
+    st.json(j_1)
    
+
+    def financial_inf(action):
+
+        """
+        Cette fonction permet de générer des données financières d'une entreprise
+        
+
+        Parameters
+        ----------
+        action : str
+            Nom du titre
+        returns
+        -----
+            Les données de revenu, de la balance comptable et du cash flow au format annuel et trimestriel au format json
+        """
+        url_fin = "https://finance.yahoo.com/quote/{}/financials?p={}"
+        stock = action
+        headers_={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
+        response = requests.get(url_fin.format(stock, stock), headers = headers_)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        pattern = re.compile(r'\s--\sData\s--\s')
+        script_data = soup.find('script', text=pattern).contents[0]
+        #script_data[:500]
+        #script_data[-500:]
+        start = script_data.find("context") - 2
+
+        json_data = json.loads(script_data[start:-12])
+        #json_data['context'].keys()
+        #json_data['context']['dispatcher']['stores']['QuoteSummaryStore'].keys()
+
+        annual_is = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["incomeStatementHistory"]["incomeStatementHistory"]
+        #print(annual_is[0])
+        #annual_is[0]["minorityInterest"]
+        annual_cf = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["cashflowStatementHistory"]["cashflowStatements"]
+        annual_bs = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["balanceSheetHistory"]["balanceSheetStatements"]
+
+        quaterly_is = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["incomeStatementHistoryQuarterly"]["incomeStatementHistory"]
+        quaterly_cf = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["cashflowStatementHistoryQuarterly"]["cashflowStatements"]
+        quaterly_bs = json_data['context']['dispatcher']['stores']['QuoteSummaryStore']["balanceSheetHistoryQuarterly"]["balanceSheetStatements"]
+
+        return annual_is, annual_cf, annual_bs, quaterly_is, quaterly_cf, quaterly_bs
+
+    annual_is, annual_cf, annual_bs, quaterly_is, quaterly_cf, quaterly_bs = financial_inf(str(stk))
+
+    def income_stats():
+        annual_is_stmts = []
+        #annual
+        for s in annual_is:
+            statement  = {}
+            for key, val in s.items():
+                try:
+                    statement[key] = val['raw']
+                except TypeError:
+                    continue
+                except KeyError:
+                    continue
+            annual_is_stmts.append(statement)
+
+            #quaterly
+        quaterly_is_stmts = []
+        for s in quaterly_is:
+            statement  = {}
+            for key, val in s.items():
+                try:
+                    statement[key] = val['raw']
+                except TypeError:
+                    continue
+                except KeyError:
+                    continue
+            quaterly_is_stmts.append(statement)
+
+
+        return annual_is_stmts, quaterly_is_stmts
+
+    annual_is_stmts, quaterly_is_stmts = income_stats()
+
+    st.markdown("<h4 style='text-align: center;'>INCOME STATEMENTS</h4>", unsafe_allow_html=True)
+    #st.write("")
+    col20, col21 = st.columns(2)
+    with col20:
+        st.write("Annuel")
+        st.json(annual_is_stmts[0])
+    
+    with col21:
+        st.write("Trimestriel")
+        st.json(quaterly_is_stmts[0])
+    
+
+
+    def clash_flow():
+        annual_cf_stmts = []
+        #annual
+        for s in annual_cf:
+            statement  = {}
+            for key, val in s.items():
+                try:
+                    statement[key] = val['raw']
+                except TypeError:
+                    continue
+                except KeyError:
+                    continue
+            annual_cf_stmts.append(statement)
+
+        #quaterly
+        quaterly_cf_stmts = []
+        for s in quaterly_cf:
+            statement  = {}
+            for key, val in s.items():
+                try:
+                    statement[key] = val['raw']
+                except TypeError:
+                    continue
+                except KeyError:
+                    continue
+            quaterly_cf_stmts.append(statement)
+
+
+        return annual_cf_stmts, quaterly_cf_stmts
+        
+    annual_cf_stmts, quaterly_cf_stmts = clash_flow()
+
+    #st.write("CASH LOWS")
+    st.markdown("<h4 style='text-align: center;'>CASH LOWS</h4>", unsafe_allow_html=True)
+    col22, col23 = st.columns(2)
+    with col22:
+        st.write("Annuel")
+        st.json(annual_cf_stmts[0])
+    
+    with col23:
+        st.write("Trimestriel")
+        st.json(quaterly_cf_stmts[0])
+    
+    
+    
+    def balance_sheet():
+        annual_bs_stmts = []
+        #annual
+        for s in annual_bs:
+            statement  = {}
+            for key, val in s.items():
+                try:
+                    statement[key] = val['raw']
+                except TypeError:
+                    continue
+                except KeyError:
+                    continue
+                annual_bs_stmts.append(statement)
+
+        #quaterly
+        quaterly_bs_stmts = []
+        for s in quaterly_bs:
+            statement  = {}
+            for key, val in s.items():
+                try:
+                    statement[key] = val['raw']
+                except TypeError:
+                    continue
+                except KeyError:
+                    continue
+            quaterly_bs_stmts.append(statement)
+
+
+        return annual_bs_stmts, quaterly_bs_stmts
+    
+    annual_bs_stmts, quaterly_bs_stmts = balance_sheet()
+
+    #st.write("")
+    st.markdown("<h4 style='text-align: center;'>BALANCE SHEET</h4>", unsafe_allow_html=True)
+
+
+  
+    col24, col25 = st.columns(2)
+    with col24:
+        st.write("Annuel")
+        st.json(annual_bs_stmts[0])
+    
+    with col25:
+        st.write("Trimestriel")
+        st.json(quaterly_bs_stmts[0])
+
     df.set_index('Date', inplace=True)
 
-st.header("** 2 - Méthodologie**")
+st.header("** 3 - Méthodologie**")
 if st.checkbox('Afficher la méthodologie'):
     #st.markdown("Parler des **RNN**, **LSTM** et de la méthodologie globale")
     st.markdown(" - **Pourquoi les RNNs** ?")
@@ -343,15 +592,16 @@ if st.checkbox('Afficher la méthodologie'):
     Elles sont semblables à une cellule de base, sauf qu'elles fonctionneront mieux ; l'algo
     converge plus rapidement, et il détectera les dépendances à long terme dans les données.""")
     
-    #st.latex(r'''\begin{equation}\mathbf{y}{(t)}=\phi\left(\mathbf{W}{x}^{\top} \mathbf{x}{(t)}+\mathbf{W}{y}^{\top} \mathbf{y}_{(t-1)}+\mathbf{b}\right)\end{equation}''')
+    st.latex(r'''\mathbf{y}{(t)}=\phi\left(\mathbf{W}{x}^{\top} \mathbf{x}{(t)}+\mathbf{W}{y}^{\top} \mathbf{y}_{(t-1)}+\mathbf{b}\right)''')
     
 
 
 
 
-st.header("** 3 - Modélisation**")
+st.header("** 4 - Modélisation**")
 if st.checkbox('Afficher la modélisation '):
-        
+    st.info("Pour faire tourner le modèle, veuillez d'abord cocher les cases **Données et Méthodologie** puis choisir des paramètres dans le menu à gauche !")
+
     st.markdown(" - **Quelle sera la forme de notre réseau de neurones** ?")
     
     st.markdown("""On va contruire un réseau de neurones composé de 4 couches.""")
@@ -472,7 +722,6 @@ if st.checkbox('Afficher la modélisation '):
         return y_pred, rmse, model
     
 
-st.info("Pour faire tourner le modèle, veuillez cocher les cases **Données, Méthodologie et Modélisations** puis choisir des paramètres dans le menu à gauche !")
 
 if st.sidebar.button('Run the model'):
     
@@ -487,7 +736,7 @@ if st.sidebar.button('Run the model'):
         
         st.write("L'opération a pris %.2f" %t2, "secondes.")
 
-        if rmse < 5:
+        if rmse < 15:
             st.success('Au regard de la RMSE, le modèle selectionné est performant!')
         else:
             st.warning("Au regard de la RMSE, le modèle selectionné n'est pas performant!")
