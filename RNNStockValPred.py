@@ -115,52 +115,53 @@ af2 = st.sidebar.selectbox("Fonction d'activation L2", ["tanh", "relu", None])
 
 
 #----------------------------- Corps du texte
+
+class WebScrapStock:
+    
+    timeout = 60
+    crumb_link = 'https://finance.yahoo.com/quote/{0}/history?p={0}'
+    crumble_regex = r'CrumbStore":{"crumb":"(.*?)"}'
+    stock_link = 'https://query1.finance.yahoo.com/v7/finance/download/{quote}?period1={dfrom}&period2={dto}&interval=1d&events=history&crumb={crumb}'
+    headers_={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
+
+
+    def __init__(self, stock_name, days_back=7):
+        self.stock_name = stock_name
+        self.session = requests.Session()
+        self.dt = timedelta(days=days_back)
+
+    def get_crumb(self):
+        response = self.session.get(self.crumb_link.format(self.stock_name), timeout=self.timeout, verify = False, headers=self.headers_)
+        response.raise_for_status()
+        match = re.search(self.crumble_regex, response.text)
+        
+        if not match:
+            raise ValueError("Pas de réponse de Yahoo Finance")
+        else:
+            self.crumb = match.group(1)
+            
+    @st.cache()
+    def get_stock(self):
+        if not hasattr(self, 'crumb') or len(self.session.cookies) == 0:
+            self.get_crumb()
+        now = datetime.utcnow()
+        dateto = int(now.timestamp())
+        datefrom = int((now - self.dt).timestamp())
+        url = self.stock_link.format(quote=self.stock_name, dfrom=datefrom, dto=dateto, crumb=self.crumb)
+        response = self.session.get(url, verify = False, headers=self.headers_)
+        response.raise_for_status()
+        df = pd.read_csv(StringIO(response.text), parse_dates=['Date'])
+        df["Stock"] = self.stock_name
+        df = df[["Date", "Stock", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
+        #st.write("On va récupérer les données de", c, "depuis", df.iloc[0, 0], "soit sur", df.shape[0], "jours de marché.")
+        return df, url
+    
 st.header("** 1 - Statistiques**")
 #st.subheader("** 1.1 - Statistiques **")
 if st.checkbox("Voir les statistiques"):
 
     st.warning("Si les données n'apparaissent pas et qu'une erreur survient, veuillez décocher la case 'Voir les statistiques' et passer.")
-    @st.cache()
-    class WebScrapStock:
-        
-        timeout = 60
-        crumb_link = 'https://finance.yahoo.com/quote/{0}/history?p={0}'
-        crumble_regex = r'CrumbStore":{"crumb":"(.*?)"}'
-        stock_link = 'https://query1.finance.yahoo.com/v7/finance/download/{quote}?period1={dfrom}&period2={dto}&interval=1d&events=history&crumb={crumb}'
-        headers_={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
 
-
-        def __init__(self, stock_name, days_back=7):
-            self.stock_name = stock_name
-            self.session = requests.Session()
-            self.dt = timedelta(days=days_back)
-
-        def get_crumb(self):
-            response = self.session.get(self.crumb_link.format(self.stock_name), timeout=self.timeout, verify = False, headers=self.headers_)
-            response.raise_for_status()
-            match = re.search(self.crumble_regex, response.text)
-            
-            if not match:
-                raise ValueError("Pas de réponse de Yahoo Finance")
-            else:
-                self.crumb = match.group(1)
-                
-        @st.cache()
-        def get_stock(self):
-            if not hasattr(self, 'crumb') or len(self.session.cookies) == 0:
-                self.get_crumb()
-            now = datetime.utcnow()
-            dateto = int(now.timestamp())
-            datefrom = int((now - self.dt).timestamp())
-            url = self.stock_link.format(quote=self.stock_name, dfrom=datefrom, dto=dateto, crumb=self.crumb)
-            response = self.session.get(url, verify = False, headers=self.headers_)
-            response.raise_for_status()
-            df = pd.read_csv(StringIO(response.text), parse_dates=['Date'])
-            df["Stock"] = self.stock_name
-            df = df[["Date", "Stock", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
-            #st.write("On va récupérer les données de", c, "depuis", df.iloc[0, 0], "soit sur", df.shape[0], "jours de marché.")
-            return df, url
-    
     
     jours = jours
     df1, url1 = WebScrapStock(stock_name  = 'AAPL', days_back=jours).get_stock()
