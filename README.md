@@ -34,7 +34,4 @@ Dans cette partie on fournit à l'utilisateur des options dans la barre latéral
 Les options sont le choix du scaler, du nombre de neurones des couches du réseau ainsi que les différentes fonction d'activation. Une fois les choix faits, l'utilisateur devra appuyer sur le bouton "Run the model" pour faire tourner le modèle. 
 
 
-La présentation est disponible [ici](https://share.streamlit.io/aadmberrada/rnnstockvalpredict/RNNStockValPred.py)
-
-
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/aadmberrada/rnnstockvalpredict/RNNStockValPred.py)
+La présentation est disponible ici ==> [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/aadmberrada/rnnstockvalpredict/RNNStockValPred.py)
