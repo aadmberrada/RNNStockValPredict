@@ -35,3 +35,6 @@ Les options sont le choix du scaler, du nombre de neurones des couches du résea
 
 
 La présentation est disponible [ici](https://share.streamlit.io/aadmberrada/rnnstockvalpredict/RNNStockValPred.py)
+
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
