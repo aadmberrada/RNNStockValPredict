@@ -47,11 +47,11 @@ st.markdown("<h1 style='text-align: center;'> Stock's Value Prediction using RNN
 #st.title("Stock Value Prediction using Neural Networks")
 col1, col2, col3 = st.columns([0.75, 0.75, 0.75])
 
-col1.image('https://raw.githubusercontent.com/aadmberrada/test/master/img/mosef3.png')
+col1.image('https://raw.githubusercontent.com/aadmberrada/RNNStockValPredict/master/img/mosef3.png')
 
-col2.image("https://raw.githubusercontent.com/aadmberrada/test/master/img/YahooFinance.jpeg")
+col2.image("https://raw.githubusercontent.com/aadmberrada/RNNStockValPredict/master/img/YahooFinance.jpeg")
 
-col3.image("https://raw.githubusercontent.com/aadmberrada/test/master/img/py.png")
+col3.image("https://raw.githubusercontent.com/aadmberrada/RNNStockValPredict/master/img/py.png")
 
 st.markdown("""
             
@@ -544,8 +544,8 @@ if st.checkbox('Afficher la méthodologie'):
     st.markdown("""Dans notre cas, cette *frame* sera égale à 60 jours""")
     st.markdown("""En voici une illustration""")
     col1, col2 = st.columns([2, 1])
-    col1.image("https://raw.githubusercontent.com/aadmberrada/test/master/img/Rnn.png")
-    col2.image("https://raw.githubusercontent.com/aadmberrada/test/master/img/rnn2.png")
+    col1.image("https://raw.githubusercontent.com/aadmberrada/RNNStockValPredict/master/img/Rnn.png")
+    col2.image("https://raw.githubusercontent.com/aadmberrada/RNNStockValPredict/master/img/rnn2.png")
     
     st.markdown("""En raison des transformations que subissent les données lorsqu'elles traversent un
     RNN, certaines informations sont perdues à chaque pas de temps. Au bout d'un moment, les RNN
