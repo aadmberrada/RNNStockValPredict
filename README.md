@@ -35,4 +35,4 @@ Les options sont le choix du scaler, du nombre de neurones des couches du résea
 
 
 La présentation est disponible [ici]("
-https://zoom.univ-paris1.fr/j/92798818253?pwd=enVDVm80VFhNSjBocVh2R25iR2w2dz09)
+https://zoom.univ-paris1.fr/j/92798818253?pwd=enVDVm80VFhNSjBocVh2R25iR2w2dz09")
