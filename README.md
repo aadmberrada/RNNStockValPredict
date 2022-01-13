@@ -4,6 +4,8 @@ Projet fait par :
   - [Abdoul Aziz Berrada](https://github.com/aadmberrada)
   - [Amira Slimene](https://github.com/aslimene)
 
+La présentation est disponible ici [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/aadmberrada/rnnstockvalpredict/RNNStockValPred.py)
+
 But du projet : 
 
 Générer un outil clé en main qui puisse permettre de sortir des statistiques d'entreprises côtées ainsi que de modéliser par une technique de Deep Learning ici les RNN (Recurrent Neural Networks) avec des couches de LSTM (Long Short Term Memory) la valeur du titre de l'entreprise lors de la prochaine journée de cotation.
@@ -34,4 +36,3 @@ Dans cette partie on fournit à l'utilisateur des options dans la barre latéral
 Les options sont le choix du scaler, du nombre de neurones des couches du réseau ainsi que les différentes fonction d'activation. Une fois les choix faits, l'utilisateur devra appuyer sur le bouton "Run the model" pour faire tourner le modèle. 
 
 
-La présentation est disponible ici [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/aadmberrada/rnnstockvalpredict/RNNStockValPred.py)
